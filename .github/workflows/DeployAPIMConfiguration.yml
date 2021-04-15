@@ -1,0 +1,146 @@
+name: Deploy APIM Configuration
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy templates to destination
+    runs-on: ubuntu-latest
+    env: 
+      DESTINATIONAPIMNAME: <Destination API name>
+      RESOURCEGROUP: <Destination API resource group>
+      FILEFOLDER: <Folder where the templates are stored>
+      BASEFILENAME: <Prefix of the template files>
+      SERVICEURL: <Service Url json object>
+      DEPLOYMENTMODE: Incremental 
+      DEPLOYMENTNAME: <Name of the deployment>
+      
+      DEPLOYGLOBALSERVICEPOLICY: ${{ false }}      
+      DEPLOYAPIS: ${{ false }}
+      DEPLOYAPIVERSIONSETS: ${{ false }}
+      DEPLOYAUTHORIZATIONSERVERS: ${{ false }}
+      DEPLOYLOGGERS: ${{ false }}
+      DEPLOYPRODUCTS: ${{ false }}
+      DEPLOYPRODUCTSAPIS: ${{ false }}
+      DEPLOYAPITAGS: ${{ false }}
+      DEPLOYNAMEDVALUES: ${{ false }}
+      DEPLOYTAGS: ${{ false }}
+      
+    steps:
+      - name: Checkout templates
+        uses: actions/checkout@v2
+      - name: Azure Login
+        uses: Azure/login@v1
+        with:
+          creds: ${{ secrets.AZURECREDENTIAL }}
+      
+      - name: Deploy Global Service Policy
+        if: ${{ env.DEPLOYGLOBALSERVICEPOLICY }}
+        uses: Azure/arm-deploy@v1
+        with:
+          scope: resourcegroup
+          resourceGroupName: ${{ env.RESOURCEGROUP }}
+          template: ${{ env.FILEFOLDER }}/${{ env.BASEFILENAME }}-globalServicePolicy.template.json
+          deploymentMode: ${{ env.DEPLOYMENTMODE }}
+          deploymentName: ${{ env.DEPLOYMENTNAME }}
+          parameters: ApimServiceName=${{ env.DESTINATIONAPIMNAME }}
+      
+      - name: Deploy APIs
+        if: ${{ env.DEPLOYAPIS }}
+        uses: Azure/arm-deploy@v1
+        with:
+          scope: resourcegroup
+          resourceGroupName: ${{ env.RESOURCEGROUP }}
+          template: ${{ env.FILEFOLDER }}/${{ env.BASEFILENAME }}-apis.template.json
+          deploymentMode: ${{ env.DEPLOYMENTMODE }} 
+          deploymentName: ${{ env.DEPLOYMENTNAME }}
+          parameters: ApimServiceName=${{ env.DESTINATIONAPIMNAME }} serviceUrl=${{ env.SERVICEURL }}
+      
+      - name: Deploy API Version Sets
+        if: ${{ env.DEPLOYAPIVERSIONSETS }}
+        uses: Azure/arm-deploy@v1
+        with:
+          scope: resourcegroup
+          resourceGroupName: ${{ env.RESOURCEGROUP }}
+          template: ${{ env.FILEFOLDER }}/${{ env.BASEFILENAME }}-apiVersionSets.template.json
+          deploymentMode: ${{ env.DEPLOYMENTMODE }}
+          deploymentName: ${{ env.DEPLOYMENTNAME }}
+          parameters: ApimServiceName=${{ env.DESTINATIONAPIMNAME }}
+      
+      - name: Deploy Authorisation Servers
+        if: ${{ env.DEPLOYAUTHORIZATIONSERVERS }}
+        uses: Azure/arm-deploy@v1
+        with:
+          scope: resourcegroup
+          resourceGroupName: ${{ env.RESOURCEGROUP }}
+          template: ${{ env.FILEFOLDER }}/${{ env.BASEFILENAME }}-authorisationServers.template.json
+          deploymentMode: ${{ env.DEPLOYMENTMODE }}
+          deploymentName: ${{ env.DEPLOYMENTNAME }}
+          parameters: ApimServiceName=${{ env.DESTINATIONAPIMNAME }}
+      
+      - name: Deploy Loggers
+        if: ${{ env.DEPLOYLOGGERS }}
+        uses: Azure/arm-deploy@v1
+        with:
+          scope: resourcegroup
+          resourceGroupName: ${{ env.RESOURCEGROUP }}
+          template: ${{ env.FILEFOLDER }}/${{ env.BASEFILENAME }}-loggers.template.json
+          deploymentMode: ${{ env.DEPLOYMENTMODE }}
+          deploymentName: ${{ env.DEPLOYMENTNAME }}
+          parameters: ApimServiceName=${{ env.DESTINATIONAPIMNAME }}
+      
+      - name: Deploy Products
+        if: ${{ env.DEPLOYPRODUCTS }}
+        uses: Azure/arm-deploy@v1
+        with:
+          scope: resourcegroup
+          resourceGroupName: ${{ env.RESOURCEGROUP }}
+          template: ${{ env.FILEFOLDER }}/${{ env.BASEFILENAME }}-products.template.json
+          deploymentMode: ${{ env.DEPLOYMENTMODE }}
+          deploymentName: ${{ env.DEPLOYMENTNAME }}
+          parameters: ApimServiceName=${{ env.DESTINATIONAPIMNAME }}
+      
+      - name: Deploy Products APIs
+        if: ${{ env.DEPLOYPRODUCTSAPIS }}
+        uses: Azure/arm-deploy@v1
+        with:
+          scope: resourcegroup
+          resourceGroupName: ${{ env.RESOURCEGROUP }}
+          template: ${{ env.FILEFOLDER }}/${{ env.BASEFILENAME }}-productAPIs.template.json
+          deploymentMode: ${{ env.DEPLOYMENTMODE }}
+          deploymentName: ${{ env.DEPLOYMENTNAME }}
+          parameters: ApimServiceName=${{ env.DESTINATIONAPIMNAME }} serviceUrl=${{ env.SERVICEURL }}
+      
+      - name: Deploy API Tags
+        if: ${{ env.APITAGS }}
+        uses: Azure/arm-deploy@v1
+        with:
+          scope: resourcegroup
+          resourceGroupName: ${{ env.RESOURCEGROUP }}
+          template: ${{ env.FILEFOLDER }}/${{ env.BASEFILENAME }}-apiTags.template.json
+          deploymentMode: ${{ env.DEPLOYMENTMODE }}
+          deploymentName: ${{ env.DEPLOYMENTNAME }}
+          parameters: ApimServiceName=${{ env.DESTINATIONAPIMNAME }}
+      
+      - name: Deploy Named Values
+        if: ${{ env.DEPLOYNAMEDVALUES }}
+        uses: Azure/arm-deploy@v1
+        with:
+          scope: resourcegroup
+          resourceGroupName: ${{ env.RESOURCEGROUP }}
+          template: ${{ env.FILEFOLDER }}/${{ env.BASEFILENAME }}-namedValues.template.json
+          deploymentMode: ${{ env.DEPLOYMENTMODE }}
+          deploymentName: ${{ env.DEPLOYMENTNAME }}
+          parameters: ApimServiceName=${{ env.DESTINATIONAPIMNAME }}
+      
+      - name: Deploy Tags
+        if: ${{ env.DEPLOYTAGS }}
+        uses: Azure/arm-deploy@v1
+        with:
+          scope: resourcegroup
+          resourceGroupName: ${{ env.RESOURCEGROUP }}
+          template: ${{ env.FILEFOLDER }}/${{ env.BASEFILENAME }}-tags.template.json
+          deploymentMode: ${{ env.DEPLOYMENTMODE }}
+          deploymentName: ${{ env.DEPLOYMENTNAME }}
+          parameters: ApimServiceName=${{ env.DESTINATIONAPIMNAME }} 

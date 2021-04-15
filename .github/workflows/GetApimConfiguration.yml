@@ -1,0 +1,75 @@
+name: Get APIM Configuration
+on:
+  workflow_dispatch:
+jobs:
+  getDataFromDevApim:
+    name: Get data from API
+    runs-on: ubuntu-latest
+    env: 
+      SOURCEAPIMNAME: <Source Apim name>
+      RESOURCEGROUP: <Source Apim resource group>
+      FILEFOLDER: <Folder to store the templates on>
+      BASEFILENAME: <Prefix of the template files>
+    steps:
+      - uses: actions/checkout@v2
+        name: Checking out repo
+      - uses: actions/setup-dotnet@v1
+        name: Installing dotnet core 3.1.x
+        with:
+          dotnet-version: '3.1.x'
+      - uses: Azure/login@v1
+        name: Logging into Azure
+        with:
+          creds: ${{ secrets.AZURECREDENTIAL }} 
+      
+      - name: Prepare Filesystem
+        run: |
+          #
+          if [ ! -d $GITHUB_WORKSPACE/ApimTemplates ]
+          then
+            mkdir -p $GITHUB_WORKSPACE/ApimTemplates
+          fi
+          if [ ! -d ${{ env.FILEFOLDER }} ]
+          then
+            mkdir ${{ env.FILEFOLDER }}
+          fi          
+          if [ ! -d $GITHUB_WORKSPACE/apimdevopstk ]
+          then
+            mkdir $GITHUB_WORKSPACE/apimdevopstk
+          fi
+          
+      - name: Retrieve APIM Devops Kit
+        run: |
+          #
+          git clone https://github.com/Azure/azure-api-management-devops-resource-kit.git $GITHUB_WORKSPACE/apimdevopstk
+    
+      - name: Running Extractor
+        run: |
+          #
+          cd $GITHUB_WORKSPACE/apimdevopstk/src
+          cd APIM_ARMTemplate
+          cd apimtemplate
+          dotnet restore
+          az account set --subscription ${{ secrets.SUBSCRIPTIONID }}
+          destination=$GITHUB_WORKSPACE/${{ env.FILEFOLDER }}
+          dotnet run extract \
+              --sourceApimName ${{ env.SOURCEAPIMNAME }} \
+              --destinationApimName DESTINATIONAPIMNAME \
+              --resourceGroup ${{ env.RESOURCEGROUP}} \
+              --fileFolder $destination \
+              --baseFileName ${{ env.BASEFILENAME }} \
+              --paramServiceUrl true \
+              --configuration Release 
+          #    --configuration Release > extractionLog.log
+          # cp extractionLog.log $destination/extractionLog.log
+          
+      - name: Commit Extracted files
+        run: |
+          #
+          cd $GITHUB_WORKSPACE/${{ env.FILEFOLDER }}      
+          commitMessage="Automated Configuration Retrieval - $(date +'%Y-%m-%d %T')" 
+          git config --global user.email "getApimconfiguration.yml@github.com_pedromvr_apim"
+          git config --global user.name "getApimconfiguration.yml"
+          git add .
+          git commit -m "$commitMessage"
+          git push
