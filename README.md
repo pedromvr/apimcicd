@@ -23,7 +23,7 @@ You can start by cloning this repository into your own github organization.
 
 ## Get an Azure Service Principal
 After that, you will need to set up a service principal to be able to access your subscription. 
-You can do that by logging into the [Azure Portal](https://portal.azure.com), access the cloud shell (the icon looks like <svg viewBox="0 0 16 16" class="" width="16px" role="presentation" fill="#fff" focusable="false" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="FxSymbol0-006" data-type="333"><g><title></title><path d="M15 2v12H1V2h14m1-1H0v14h16V1z"></path><path d="M12.5 12h-4c-.3 0-.5-.2-.5-.5s.2-.5.5-.5h4c.3 0 .5.2.5.5s-.2.5-.5.5zM7.8 8.1s0-.1 0 0v-.5L3.7 4.3c-.2-.2-.5-.2-.7 0-.2.3-.1.6.1.7l3.5 3-3.5 3c-.2.2-.2.5-.1.7.1.1.2.2.4.2.1 0 .2 0 .3-.1l3.9-3.3v-.1c.2-.2.2-.2.2-.3 0 .1 0 0 0 0z"></path></g></svg> ) and type
+You can do that by logging into the [Azure Portal](https://portal.azure.com), access the cloud shell and type
 
 ```
 az ad sp create-for-rbac --name "<ServicePrincipalName>" --role contributor --scopes /subscriptions/<SubscriptionId> --sdk-auth
